@@ -13,6 +13,37 @@ struct Player {
     int shots;
 };
 
+bool isValidPlacement(int x, int y, int length, bool horizontal) {
+    if (horizontal) {
+        for (int i = 0; i < length; ++i) {
+            if (y + i >= boardSize || board[x][y + i] == 'S') {
+                return false;  // Invalid placement
+            }
+        }
+    }
+    else {
+        for (int i = 0; i < length; ++i) {
+            if (x + i >= boardSize || board[x + i][y] == 'S') {
+                return false;  // Invalid placement
+            }
+        }
+    }
+    return true;  // Valid placement
+}
+
+void placeShip(int x, int y, int length, bool horizontal) {
+    if (horizontal) {
+        for (int i = 0; i < length; ++i) {
+            board[x][y + i] = 'S';
+        }
+    }
+    else {
+        for (int i = 0; i < length; ++i) {
+            board[x + i][y] = 'S';
+        }
+    }
+}
+
 void initializeBoard() {
     srand(time(0));
     for (int i = 0; i < boardSize; ++i)
@@ -22,27 +53,32 @@ void initializeBoard() {
     // Place a ship of length 3
     int x = rand() % (boardSize - 2);
     int y = rand() % boardSize;
-    for (int i = 0; i < 3; i++)
-        board[x + i][y] = 'S';
+    while (!isValidPlacement(x, y, 3, true)) {
+        x = rand() % (boardSize - 2);
+        y = rand() % boardSize;
+    }
+    placeShip(x, y, 3, true);
 
     // Place two ships of length 2
     for (int i = 0; i < 2; i++) {
         x = rand() % boardSize;
         y = rand() % (boardSize - 1);
-        for (int j = 0; j < 2; j++)
-            board[x][y + j] = 'S';
+        while (!isValidPlacement(x, y, 2, true)) {
+            x = rand() % boardSize;
+            y = rand() % (boardSize - 1);
+        }
+        placeShip(x, y, 2, true);
     }
 
     // Place four ships of length 1
     for (int i = 0; i < 4; i++) {
         x = rand() % boardSize;
         y = rand() % boardSize;
-        while (board[x][y] == 'S') {
-            // Ensure the cell is empty before placing a ship
+        while (!isValidPlacement(x, y, 1, false)) {
             x = rand() % boardSize;
             y = rand() % boardSize;
         }
-        board[x][y] = 'S';
+        placeShip(x, y, 1, false);
     }
 }
 
@@ -98,7 +134,7 @@ void playGame(const string& playerName) {
         totalShots++;
 
         while (!isValidMove(row, col)) {
-            cout << "Invalid move! Please enter a new guess (row, col): ";
+            cout << "Invalid move!" << endl << "Please enter a new guess(row, col) : ";
             cin >> row >> col;
             totalShots++;
         }
@@ -115,7 +151,7 @@ void playGame(const string& playerName) {
                 this_thread::sleep_for(chrono::milliseconds(400));
             }
             else {
-                
+
                 this_thread::sleep_for(chrono::milliseconds(400));
             }
         }
@@ -193,4 +229,3 @@ int main() {
 
     return 0;
 }
-
